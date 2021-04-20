@@ -1,0 +1,188 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+df = pd.read_csv('insurance.csv')
+df.head()
+df.shape
+df.describe()
+df.dtypes
+df.isnull().sum()
+
+sns.distplot(df['charges'])
+plt.title('Distribution of Charges.')
+
+sns.lmplot(x = 'age', y = 'charges', data=df, hue='smoker', palette='Set1')
+sns.lmplot(x = 'bmi', y = 'charges', data=df, palette='Set1')
+sns.lmplot(x = 'children', y = 'charges', data=df, palette='Set3')
+sns.barplot(x = 'smoker', y = 'charges', data=df, palette='cool')
+sns.barplot(x = "sex", y = "charges",  data=df);
+sns.set(style='whitegrid')
+sns.barplot(x='region', y='charges', data=df, palette='cool')
+#Converting objects labels into categorical
+df[['sex', 'smoker', 'region']] = df[['sex', 'smoker', 'region']].astype('category')
+df.dtypes
+
+#preprecessing
+from sklearn.preprocessing import LabelEncoder
+label = LabelEncoder()
+label.fit(df.sex.drop_duplicates())
+df.sex = label.transform(df.sex)
+label.fit(df.smoker.drop_duplicates())
+df.smoker = label.transform(df.smoker)
+label.fit(df.region.drop_duplicates())
+df.region = label.transform(df.region)
+df.dtypes
+
+#features
+x= df.drop(['charges','region'], axis = 1)
+#predicted value
+y= df.charges
+
+#importing train_test_split model
+from sklearn.model_selection import train_test_split
+#splitting train test data
+x_train, x_test, y_train, y_test = train_test_split(x, y,test_size=0.2,random_state=0)
+
+#train and predict result of test set
+#Linear regression
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+lm = LinearRegression()
+lm.fit(x_train,y_train) #train the model
+y_train_pred = lm.predict(x_train)
+lm.score(x_test,y_test)
+
+RMSE=np.sqrt(mean_squared_error(y_train,y_train_pred))
+print("the Root Mean Square Error of training model",RMSE)
+R2_score=r2_score(y_train,y_train_pred)
+print("the R2 value of training model",R2_score)
+
+y_test_pred = lm.predict(x_test)
+RMSE1=np.sqrt(mean_squared_error(y_test,y_test_pred))
+print("the Root Mean Square Error of test model",RMSE1)
+R2_score1=r2_score(y_test,y_test_pred)
+print("the R2 value of test model",R2_score1)
+LRscr=lm.score(x_test,y_test)
+print(LRscr)
+Lreg=lm.predict(x_test)
+Lreg=pd.DataFrame({'Actualtest':y_test,
+                  'Predicted':Lreg,
+                  'Difference':Lreg-y_test})
+Lreg.head()
+
+###ridge regression
+from sklearn.linear_model import Ridge
+Ridge = Ridge(alpha=0.5)
+Ridge.fit(x_train, y_train)
+
+y_train_pred=Ridge.predict(x_train)
+RMSE=np.sqrt(mean_squared_error(y_train,y_train_pred))
+print("the Root Mean Square Error of training model",RMSE)
+R2_score=r2_score(y_train,y_train_pred)
+print("the R2 value of training model",R2_score)
+
+
+y_test_pred = Ridge.predict(x_test)
+RMSE2=np.sqrt(mean_squared_error(y_test,y_test_pred))
+print("the Root Mean Square Error of test model",RMSE2)
+R2_score2=r2_score(y_test,y_test_pred)
+print("the R2 value of test model",R2_score2)
+
+
+RGscr=Ridge.score(x_test, y_test)
+print(RGscr)
+
+Rreg=Ridge.predict(x_test)
+Rreg=pd.DataFrame({'Actual test':y_test,
+                  'predicted':Rreg,
+                  'Difference':Rreg-y_test})
+Rreg.head()
+
+# Lasso Regression
+from sklearn.linear_model import Lasso
+Lasso = Lasso(alpha=0.5, fit_intercept=True, normalize=False, precompute=False, max_iter=1000,
+              tol=0.0001, warm_start=False, positive=False, random_state=None, selection='cyclic')
+Lasso.fit(x_train, y_train)
+LSscr=Lasso.score(x_test, y_test)
+print(LSscr)
+
+y_train_pred=Lasso.predict(x_train)
+RMSE=np.sqrt(mean_squared_error(y_train,y_train_pred))
+print("the Root Mean Square Error of training model",RMSE)
+R2_score=r2_score(y_train,y_train_pred)
+print("the R2 value of training model",R2_score)
+
+
+y_test_pred = Lasso.predict(x_test)
+RMSE3=np.sqrt(mean_squared_error(y_test,y_test_pred))
+print("the Root Mean Square Error of test model",RMSE3)
+R2_score3=r2_score(y_test,y_test_pred)
+print("the R2 value of test model",R2_score3)
+
+Lpred=Lasso.predict(x_test)
+Lpred=pd.DataFrame({'Actual test':y_test,
+                   'predicted':Lpred,
+                   'Difference':Lpred-y_test})
+Lpred.head()
+
+#Polynomial regression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
+x = df.drop(['charges', 'sex', 'region'], axis = 1)
+y = df.charges
+pol = PolynomialFeatures (degree = 2)
+x_pol = pol.fit_transform(x)
+x_train, x_test, y_train, y_test = train_test_split(x_pol, y, test_size=0.2, random_state=0)
+
+Pol_reg = LinearRegression()
+Pol_reg.fit(x_train, y_train)
+y_train_pred = Pol_reg.predict(x_train)
+y_test_pred = Pol_reg.predict(x_test)
+#scores######################
+PRscr=Pol_reg.score(x_test, y_test)
+print(PRscr)
+
+RMSE=np.sqrt(mean_squared_error(y_train,y_train_pred))
+print("the Root Mean Square Error of training model",RMSE)
+R2_score=r2_score(y_train,y_train_pred)
+print("the R2 value of training model",R2_score)
+
+
+y_test_pred = Pol_reg.predict(x_test)
+RMSE4=np.sqrt(mean_squared_error(y_test,y_test_pred))
+print("the Root Mean Square Error of test model",RMSE4)
+R2_score4=r2_score(y_test,y_test_pred)
+print("the R2 value of test model",R2_score4)
+
+p_pred=Pol_reg.predict(x_test)
+p_pred=pd.DataFrame({'Actual test':y_test,
+                   'predeicted':p_pred,
+                   'Difference':p_pred-y_test})
+p_pred.head()
+
+#plotting scores of all models
+scores=pd.DataFrame({'Linear':LRscr,
+                     'Ridge': RGscr,
+                     'Lasso': LSscr,
+                      'Pol_reg': PRscr},
+                    index=['Accuracy'])
+scores
+
+scores.plot(kind='bar',figsize = (8,8))
+plt.title('Scores of all Model')
+plt.xlabel('Model Name')
+plt.ylabel('Scores');
+
+
+scores=pd.DataFrame({'Accuracy': [LRscr,RGscr,LSscr,PRscr],'RMSE': [RMSE1,RMSE2,RMSE3,RMSE4],
+                     'R2_score':[R2_score1,R2_score2,R2_score3,R2_score4]},
+                    index=['Linear','Ridge','Lasso','Polynomial'])
+scores
+
+scores.T.plot(kind = 'bar' ,figsize = (8,8))
+plt.title('Scores of all Model')
+plt.xlabel('Model Name')
+plt.ylabel('Scores');
+
